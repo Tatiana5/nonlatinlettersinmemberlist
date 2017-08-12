@@ -56,7 +56,7 @@ class listener implements EventSubscriberInterface
 	 * @param string                            $phpbb_root_path Root path
 	 * @param string                            $php_ext
 	*/
-	public function __construct(\phpbb\db\driver\driver_interface $db, \phpbb\user $user, \phpbb\request\request $request, 
+	public function __construct(\phpbb\db\driver\driver_interface $db, \phpbb\user $user, \phpbb\request\request $request,
 								\phpbb\template\template $template, $phpbb_root_path, $php_ext)
 	{
 		$this->db = $db;
