@@ -1,0 +1,28 @@
+{
+    "name": "tatiana5/nonlatinlettersinmemberlist",
+    "type": "phpbb-extension",
+    "description": "Non-Latin Letters in Memberlist",
+    "homepage": "https://www.phpbbguru.net/community/",
+    "version": "0.0.1",
+    "time": "2017-08-12",
+    "license": "GPL-2.0",
+    "authors": [
+        {
+            "name": "Татьяна5",
+            "homepage": "https://www.phpbbguru.net/community/",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.3"
+    },
+    "require-dev": {
+      "phpbb/epv": "dev-master"
+    },
+    "extra": {
+        "display-name": "Non-Latin Letters in Memberlist",
+        "soft-require": {
+            "phpbb/phpbb": "3.1.*@dev"
+        }
+    }
+}
