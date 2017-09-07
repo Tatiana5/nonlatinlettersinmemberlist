@@ -2,11 +2,11 @@ services:
     tatiana5.nonlatinlettersinmemberlist.listener:
         class: tatiana5\nonlatinlettersinmemberlist\event\listener
         arguments:
-            - @dbal.conn
-            - @user
-            - @request
-            - @template
-            - %core.root_path%
-            - %core.php_ext%
+            - '@dbal.conn'
+            - '@user'
+            - '@request'
+            - '@template'
+            - '%core.root_path%'
+            - '%core.php_ext%'
         tags:
             - { name: event.listener }
