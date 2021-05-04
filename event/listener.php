@@ -15,20 +15,6 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 */
 class listener implements EventSubscriberInterface
 {
-/**
-* Assign functions defined in this class to event listeners in the core
-*
-* @return array
-* @static
-* @access public
-*/
-	static public function getSubscribedEvents()
-	{
-		return array(
-			'core.memberlist_modify_sql_query_data' => 'nonlatinletters',
-		);
-	}
-
 	/** @var \phpbb\db\driver\driver_interface */
 	protected $db;
 
@@ -67,9 +53,24 @@ class listener implements EventSubscriberInterface
 		$this->php_ext = $php_ext;
 	}
 
-	public function nonlatinletters($event)
+	/**
+	* Assign functions defined in this class to event listeners in the core
+	*
+	* @return array
+	* @static
+	* @access public
+	*/
+	static public function getSubscribedEvents()
 	{
-		$this->user->add_lang_ext('tatiana5/nonlatinlettersinmemberlist', array('nonlatinletters'));
+		return [
+			'core.memberlist_modify_sql_query_data'			=> 'memberlist_modify_sql_query_data',
+			'core.memberlist_modify_sort_pagination_params'	=> 'memberlist_modify_sort_pagination_params',
+		];
+	}
+
+	public function memberlist_modify_sql_query_data($event)
+	{
+		$this->user->add_lang_ext('tatiana5/nonlatinlettersinmemberlist', ['nonlatinletters']);
 
 		$sql_where = $event['sql_where'];
 
@@ -108,62 +109,65 @@ class listener implements EventSubscriberInterface
 		}
 
 		$event['sql_where'] = $sql_where;
+	}
 
+	public function memberlist_modify_sort_pagination_params($event)
+	{
 		//Template
-		$check_params = array(
-			'g'				=> array('g', 0),
-			'sk'			=> array('sk', 'c'),
-			'sd'			=> array('sd', 'a'),
-			'form'			=> array('form', ''),
-			'field'			=> array('field', ''),
-			'select_single'	=> array('select_single', $this->request->variable('select_single', false)),
-			'username'		=> array('username', '', true),
-			'email'			=> array('email', ''),
-			'jabber'		=> array('jabber', ''),
-			'search_group_id'	=> array('search_group_id', 0),
-			'joined_select'	=> array('joined_select', 'lt'),
-			'active_select'	=> array('active_select', 'lt'),
-			'count_select'	=> array('count_select', 'eq'),
-			'joined'		=> array('joined', ''),
-			'active'		=> array('active', ''),
-			'count'			=> ($this->request->variable('count', '') !== '') ? array('count', 0) : array('count', ''),
-			'ip'			=> array('ip', ''),
-			'first_char'	=> array('first_char', ''),
-		);
+		$sort_params = $event['sort_params'];
+		$params = $event['params'];
+		$first_characters = $event['first_characters'];
+		$u_first_char_params = $event['u_first_char_params'];
+		$first_char_block_vars = $event['first_char_block_vars'];
 
-		$u_first_char_params = array();
+		$first_char = $this->request->variable('first_char', '', true);
 
-		foreach ($check_params as $key => $call)
+		$nonlatin_characters = array_unique(is_array($this->user->lang['NONLATIN_ALPHABET']) ? $this->user->lang['NONLATIN_ALPHABET'] : preg_split('//u', $this->user->lang['NONLATIN_ALPHABET'], -1, PREG_SPLIT_NO_EMPTY));
+		//$nonlatin_characters['other'] = $first_characters['other'];
+		array_pop($first_char_block_vars);
+		
+		$first_char_block_vars[] = [
+			'DESC'			=> '&nbsp;',
+			'VALUE'			=> '&nbsp;',
+			'S_SELECTED'	=> false,
+			'U_SORT'		=> '#',
+		];
+
+		foreach ($nonlatin_characters as $char => $desc)
 		{
-			if (!$this->request->is_set($key))
-			{
-				continue;
-			}
+			$first_char_block_vars[] = [
+				'DESC'			=> utf8_strtoupper($desc),
+				'VALUE'			=> $desc,
+				'S_SELECTED'	=> ($first_char == $desc) ? true : false,
+				'U_SORT'		=> append_sid("{$this->phpbb_root_path}memberlist." . $this->php_ext, $u_first_char_params . 'first_char=' . $desc) . '#memberlist',
+			];
+		}
 
-			$param = $this->request->variable($key, $call);
-			// Encode strings, convert everything else to int in order to prevent empty parameters.
-			$param = urlencode($key) . '=' . ((is_string($param)) ? urlencode($param) : (int) $param);
-			$params[] = $param;
+		$first_char_block_vars[] = [
+			'DESC'			=> $first_characters['other'],
+			'VALUE'			=> 'other',
+			'S_SELECTED'	=> ($first_char == 'other') ? true : false,
+			'U_SORT'		=> append_sid("{$this->phpbb_root_path}memberlist." . $this->php_ext, $u_first_char_params . 'first_char=other') . '#memberlist',
+		];
 
-			if ($key != 'first_char')
+		foreach ($sort_params as $key => $param)
+		{
+			if (stripos($param, 'first_char=') === 0)
 			{
-				$u_first_char_params[] = $param;
+				$sort_params[$key] = 'first_char=' . $first_char;
 			}
 		}
 
-		$u_first_char_params = implode('&amp;', $u_first_char_params);
-		$u_first_char_params .= ($u_first_char_params) ? '&amp;' : '';
-
-		$chars = array_unique(is_array($this->user->lang['NONLATIN_ALPHABET']) ? $this->user->lang['NONLATIN_ALPHABET'] : preg_split('//u', $this->user->lang['NONLATIN_ALPHABET'], -1, PREG_SPLIT_NO_EMPTY));
-
-		foreach ($chars as $char)
+		foreach ($params as $key => $param)
 		{
-			$this->template->assign_block_vars('first_char', array(
-				'DESC'			=> ($char == 'other') ? $this->user->lang['OTHER'] : utf8_strtoupper($char),
-				'VALUE'			=> $char,
-				'S_SELECTED'	=> ($first_char == $char) ? true : false,
-				'U_SORT'		=> append_sid("{$this->phpbb_root_path}memberlist.$this->php_ext", $u_first_char_params . 'first_char=' . $char) . '#memberlist',
-			));
+			if (stripos($param, 'first_char=') === 0)
+			{
+				$params[$key] = 'first_char=' . $first_char;
+			}
 		}
+
+		$event['first_char_block_vars'] = $first_char_block_vars;
+		$event['sort_params'] = $sort_params;
+		$event['params'] = $params;
 	}
 }

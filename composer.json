@@ -3,7 +3,7 @@
     "type": "phpbb-extension",
     "description": "Non-Latin Letters in Memberlist",
     "homepage": "https://www.phpbbguru.net/community/",
-    "version": "0.0.1",
+    "version": "1.0.0",
     "time": "2017-08-12",
     "license": "GPL-2.0",
     "authors": [
