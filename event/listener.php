@@ -125,7 +125,7 @@ class listener implements EventSubscriberInterface
 		$nonlatin_characters = array_unique(is_array($this->user->lang['NONLATIN_ALPHABET']) ? $this->user->lang['NONLATIN_ALPHABET'] : preg_split('//u', $this->user->lang['NONLATIN_ALPHABET'], -1, PREG_SPLIT_NO_EMPTY));
 		//$nonlatin_characters['other'] = $first_characters['other'];
 		array_pop($first_char_block_vars);
-		
+
 		$first_char_block_vars[] = [
 			'DESC'			=> '&nbsp;',
 			'VALUE'			=> '&nbsp;',
