@@ -87,7 +87,7 @@ class listener implements EventSubscriberInterface
 		}
 		else if ($first_char)
 		{
-			$sql_where = str_replace(' AND u.username_clean ' . $this->db->sql_like_expression(substr($this->request->variable('first_char', ''), 0, 1) . $this->db->get_any_char()), '', $sql_where);
+			$sql_where = str_replace(' AND u.username_clean ' . $this->db->sql_like_expression(mb_substr($this->request->variable('first_char', ''), 0, 1) . $this->db->get_any_char()), '', $sql_where);
 		}
 
 		//Add new
